@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import type { MouseEvent, ReactNode } from 'react';
-import pdfjsLib from './pdfjs';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState } from "react";
+import type { MouseEvent, ReactNode } from "react";
+import pdfjsLib from "./pdfjs";
+import { createPortal } from "react-dom";
 
 export type Box = {
   id: string;
@@ -46,7 +46,6 @@ function Overlay({
   vpWidth,
   vpHeight,
   draft,
-  isDrawing,
   onMouseDown,
   onMouseMove,
   onMouseUp,
@@ -56,7 +55,6 @@ function Overlay({
   vpWidth: number;
   vpHeight: number;
   draft: DraftBox | null;
-  isDrawing: boolean;
   onMouseDown: (e: MouseEvent<SVGSVGElement>, page: number) => void;
   onMouseMove: (e: MouseEvent<SVGSVGElement>) => void;
   onMouseUp: () => void;
@@ -68,10 +66,9 @@ function Overlay({
       }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
-      className='absolute inset-0 cursor-crosshair'
+      className="absolute inset-0 cursor-crosshair"
       width={vpWidth}
-      height={vpHeight}
-    >
+      height={vpHeight}>
       {boxes
         .filter((b) => b.page === page)
         .map((box) => (
@@ -81,10 +78,9 @@ function Overlay({
             y={box.y * vpHeight}
             width={box.width * vpWidth}
             height={box.height * vpHeight}
-            fill='rgba(0,0,0,0.15)'
-            stroke='black'
-            strokeWidth={2}
-          ></rect>
+            fill="rgba(0,0,0,0.15)"
+            stroke="black"
+            strokeWidth={2}></rect>
         ))}
 
       {draft && draft.page === page && (
@@ -93,8 +89,8 @@ function Overlay({
           y={draft.y * vpHeight}
           width={draft.width * vpWidth}
           height={draft.height * vpHeight}
-          fill='rgba(0,0,0,0.15)'
-          stroke='blue'
+          fill="rgba(0,0,0,0.15)"
+          stroke="blue"
           strokeWidth={2}
         />
       )}
@@ -109,14 +105,12 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
   const [pageSizes, setPageSizes] = useState<Record<number, PageSize>>({});
   const [boxes, setBoxes] = useState<Box[]>([]);
   const [draft, setDraft] = useState<DraftBox | null>(null);
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
   function onMouseDown(e: MouseEvent<SVGSVGElement>, page: number) {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
 
-    setIsDrawing(true);
     setDraft({
       id: crypto.randomUUID(),
       page,
@@ -157,7 +151,6 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
       return newBoxes;
     });
     setDraft(null);
-    setIsDrawing(false);
   }
 
   useEffect(() => {
@@ -166,7 +159,7 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
     async function render() {
       if (!containerRef.current || !fileUrl) return;
 
-      containerRef.current.innerHTML = '';
+      containerRef.current.innerHTML = "";
 
       const pdf = await pdfjsLib.getDocument(fileUrl).promise;
 
@@ -179,12 +172,12 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
         const page = await pdf.getPage(pageNum);
         const viewport = page.getViewport({ scale });
 
-        const pageWrapper = document.createElement('div');
+        const pageWrapper = document.createElement("div");
         pageWrapper.dataset.page = String(pageNum);
-        pageWrapper.className = 'relative mb-6';
+        pageWrapper.className = "relative mb-6";
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
         canvas.width = viewport.width;
@@ -218,8 +211,8 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
   }, [fileUrl, scale]);
 
   return (
-    <div className='w-full flex justify-center'>
-      <div ref={containerRef} className='w-full max-w-5xl'></div>
+    <div className="w-full flex justify-center">
+      <div ref={containerRef} className="w-full max-w-5xl"></div>
 
       {pages.map((pageNum) => {
         const size = pageSizes[pageNum] || { width: 0, height: 0 };
@@ -230,12 +223,10 @@ export function PdfSelector({ fileUrl, onBoxesChange }: PdfSelectorProps) {
               onMouseMove={onMouseMove}
               onMouseUp={onMouseUp}
               draft={draft}
-              isDrawing={isDrawing}
               page={pageNum}
               boxes={boxes}
               vpWidth={size.width}
-              vpHeight={size.height}
-            ></Overlay>
+              vpHeight={size.height}></Overlay>
           </OverlayPortal>
         );
       })}
